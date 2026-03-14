@@ -1,0 +1,21 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+
+# --- Virtual Environment ---
+.venv/
+venv/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# --- ONNX models (ไม่จำเป็นบน server, ใช้แค่ .tflite) ---
+models/**/*.onnx
+
+# --- Logs ---
+*.log

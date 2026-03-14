@@ -1,0 +1,15 @@
+# ละเว้นไฟล์ที่ไม่จำเป็นใน Docker image
+__pycache__/
+.venv/
+.git/
+.gitignore
+.DS_Store
+
+# ONNX ไม่ต้องการ (ใช้แค่ .tflite)
+models/**/*.onnx
+
+# Config ไม่ต้องอยู่ใน image
+railway.toml
+Procfile
+README.md
+*.log
