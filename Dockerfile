@@ -7,8 +7,7 @@ COPY requirements.txt ./requirements.txt
 
 # อัปเดตและติดตั้งไลบรารี
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir tensorflow-cpu
+    pip install --no-cache-dir -r requirements.txt
 
 # คัดลอกไฟล์ Python source
 COPY main.py service.py schemas.py ./

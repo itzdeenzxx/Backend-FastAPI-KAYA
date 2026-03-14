@@ -4,10 +4,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "./Dockerfile"
 
 [deploy]
-# Health check endpoint
+# Health check endpoint (TF โหลดช้า ต้องให้เวลา 5 นาที)
 healthcheckPath = "/health"
-healthcheckTimeout = 120
-# รัน FastAPI
-startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+healthcheckTimeout = 300
+startCommand = "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
