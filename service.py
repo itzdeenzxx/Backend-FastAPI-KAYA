@@ -13,15 +13,24 @@ try:
     import tensorflow as tf
 
     def load_tflite(model_path: str):
-        # Try AUTO resolver first (supports newer TFLite ops), fallback to default
-        try:
-            return tf.lite.Interpreter(
-                model_path=model_path,
-                experimental_op_resolver_type=tf.lite.experimental.OpResolverType.AUTO
-            )
-        except (ValueError, RuntimeError):
-            # Fallback to default interpreter without experimental resolver
-            return tf.lite.Interpreter(model_path=model_path)
+        # Try SELECT_TF_OPS first (supports TensorFlow Flex ops like FlexTensorListReserve)
+        resolvers = [
+            tf.lite.experimental.OpResolverType.SELECT_TF_OPS,
+            tf.lite.experimental.OpResolverType.AUTO,
+            tf.lite.experimental.OpResolverType.BUILTIN_REF,
+        ]
+
+        for resolver in resolvers:
+            try:
+                return tf.lite.Interpreter(
+                    model_path=model_path,
+                    experimental_op_resolver_type=resolver
+                )
+            except (ValueError, RuntimeError, Exception):
+                continue
+
+        # Final fallback: default interpreter without experimental resolver
+        return tf.lite.Interpreter(model_path=model_path)
 
 except ImportError:
     import tflite_runtime.interpreter as tflite
