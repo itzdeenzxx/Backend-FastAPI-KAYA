@@ -13,12 +13,17 @@ try:
     import tensorflow as tf
 
     def load_tflite(model_path: str):
-        # Try SELECT_TF_OPS first (supports TensorFlow Flex ops like FlexTensorListReserve)
-        resolvers = [
-            tf.lite.experimental.OpResolverType.SELECT_TF_OPS,
+        # Build resolver list based on available options (compatibility for TF 2.17-2.18+)
+        resolvers = []
+
+        # SELECT_TF_OPS only available in TF <= 2.17
+        if hasattr(tf.lite.experimental.OpResolverType, 'SELECT_TF_OPS'):
+            resolvers.append(tf.lite.experimental.OpResolverType.SELECT_TF_OPS)
+
+        resolvers.extend([
             tf.lite.experimental.OpResolverType.AUTO,
             tf.lite.experimental.OpResolverType.BUILTIN_REF,
-        ]
+        ])
 
         for resolver in resolvers:
             try:
