@@ -10,16 +10,16 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 try:
+    import tensorflow as tf
+
+    def load_tflite(model_path: str):
+        return tf.lite.Interpreter(model_path=model_path)
+
+except ImportError:
     import tflite_runtime.interpreter as tflite
 
     def load_tflite(model_path: str):
         return tflite.Interpreter(model_path=model_path)
-
-except ImportError:
-    import tensorflow as tf
-
-    def load_tflite(model_path: str):
-        return tf.lite.Interpreter(model_path=model_path, experimental_op_resolver_type=tf.lite.experimental.OpResolverType.BUILTIN_REF)
 
 
 class PoseServiceError(Exception):
@@ -147,22 +147,12 @@ class PoseScoringService:
         move_gate, move_ratio = self._compute_movement_gate(raw_clip, bundle.cfg)
         clip = self._scale_raw_clip(raw_clip, bundle.cfg)
 
-        try:
-            with bundle.lock:
-                lstm_pred = self._tflite_predict(bundle.lstm_interp, clip)
-                cnn_pred = self._tflite_predict(bundle.cnn_interp, clip)
+        with bundle.lock:
+            lstm_pred = self._tflite_predict(bundle.lstm_interp, clip)
+            cnn_pred = self._tflite_predict(bundle.cnn_interp, clip)
 
-            lstm_error = float(np.mean(np.square(clip - lstm_pred)))
-            cnn_error = float(np.mean(np.square(clip - cnn_pred)))
-            
-        except PoseServiceError as e:
-            if "Flex" in str(e.details) or "TensorListReserve" in str(e.details) or "TFLite inference" in str(e.message):
-                # Mock response for testing frontend integration due to Flex Ops issue on MacOS
-                print(f"[Warning] Mocking prediction due to TFLite Flex Delegate missing on this platform.")
-                lstm_error = 0.005
-                cnn_error = 0.005
-            else:
-                raise e
+        lstm_error = float(np.mean(np.square(clip - lstm_pred)))
+        cnn_error = float(np.mean(np.square(clip - cnn_pred)))
 
         lstm_threshold = float(bundle.cfg.get("lstm_threshold", 0.01))
         cnn_threshold = float(bundle.cfg.get("cnn_threshold", 0.01))
